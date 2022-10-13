@@ -5,8 +5,6 @@
 package ad.teis;
 
 import ad.teis.model.Persona;
-import ad.teis.persistencia.DataIOPersistencia;
-import ad.teis.persistencia.IPersistencia;
 import ad.teis.persistencia.RandomAccessPersistencia;
 import java.util.ArrayList;
 
@@ -24,16 +22,16 @@ public class UD1_Actividad14 {
     public static void main(String[] args) {
         ArrayList<Persona> personas = new ArrayList<>();
         ArrayList<Persona> personasRecuperadas = new ArrayList<>();
-        Persona personaA = new Persona(1, "12345678A", 18, 20000.65f);
-        Persona personaB = new Persona(2, "12345678B", 12, 30000.65f);
-        Persona personaC = new Persona(3, "12345678C", 22, 40000.65f);
+        Persona personaA = new Persona(1, "12345678A", 18, 20000.65f, "Chucha");
+        Persona personaB = new Persona(2, "12345678B", 12, 30000.65f, "Paco");
+        Persona personaC = new Persona(3, "12345678C", 22, 40000.65f, "Andrea");
         personas.add(personaA);
         personas.add(personaB);
         personas.add(personaC);
 
         RandomAccessPersistencia random = new RandomAccessPersistencia();
 
-        //  random.escribirPersonas(personas, PERSONA_FILE);
+        random.escribirPersonas(personas, PERSONA_FILE);
         personasRecuperadas = random.leerTodo(PERSONA_FILE);
 
         int contador = 1;
@@ -42,7 +40,7 @@ public class UD1_Actividad14 {
             contador++;
         }
 
-        int pos = 5;
+        int pos = 3;
         Persona personaRecuperada = random.leerPersona(pos, PERSONA_FILE);
         if (personaRecuperada != null) {
             System.out.println("La persona en la posición: " + pos + " es: " + personaRecuperada);
@@ -62,7 +60,7 @@ public class UD1_Actividad14 {
 //             System.out.println("No se ha añadido la persona en la posición: " + pos);
 //        }
         
-        System.out.println("Incrementando el salario a "   + random.sumarSalario(5, PERSONA_FILE, 1000.0f));
+        System.out.println("Incrementando el salario a "   + random.sumarSalario(3, PERSONA_FILE, 1000.0f));
     }
 
 }

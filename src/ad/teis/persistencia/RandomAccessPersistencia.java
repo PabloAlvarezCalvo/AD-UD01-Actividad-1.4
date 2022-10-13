@@ -9,31 +9,50 @@ import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 /**
  *
- * @author mfernandez
+ * @author a21pabloac1
  */
 public class RandomAccessPersistencia implements IPersistencia {
-
-    private static final int LONG_BYTES_PERSONA = 34;
+    
+    private static final int MAX_LENGTH_NOMBRE = 100;
+    
+    private static final int BYTES_ID = 8;
+    private static final int BYTES_DNI = 18;
+    private static final int BYTES_EDAD = 4;
+    private static final int BYTES_SALARIO = 4;
+    private static final int BYTES_BORRADO = 1;
+    private static final int BYTES_NOMBRE = MAX_LENGTH_NOMBRE * 2;
+    
+    private static final int OFFSET_ID = 0; //0, [0 - 7]
+    private static final int OFFSET_DNI = OFFSET_ID + BYTES_ID; //0 + 8 = 8, [8 - 25]
+    private static final int OFFSET_EDAD = OFFSET_DNI + BYTES_DNI; //8 + 18 = 26, [26 - 29]
+    private static final int OFFSET_SALARIO = OFFSET_EDAD + BYTES_EDAD; //26 + 4 = 30, [30 - 33]
+    private static final int OFFSET_BORRADO = OFFSET_SALARIO + BYTES_SALARIO; //30 + 4 = 34, [34]
+    private static final int OFFSET_NOMBRE = OFFSET_BORRADO + BYTES_BORRADO ; //34 + 1 = 35, [35 - 235]
+    
+    private static final int LONG_BYTES_PERSONA = BYTES_ID + BYTES_DNI + BYTES_EDAD + BYTES_SALARIO + BYTES_BORRADO + BYTES_NOMBRE;
 
     @Override
     public void escribirPersona(Persona persona, String ruta) {
 
         try (
-                 RandomAccessFile raf = new RandomAccessFile(ruta, "rw");) {
+                RandomAccessFile raf = new RandomAccessFile(ruta, "rw");
+            )
+        {
             raf.writeLong(persona.getId());
             StringBuilder sb = new StringBuilder(persona.getDni());
             sb.setLength(9);
-            raf.writeChars(sb.toString());
-            //raf.writeUTF(sb.toString());
-
+            raf.writeChars(sb.toString());   
             raf.writeInt(persona.getEdad());
             raf.writeFloat(persona.getSalario());
+            raf.writeBoolean(persona.isBorrado());
+            
+            sb = new StringBuilder(persona.getNombre());
+            sb.setLength(100);
+            raf.writeChars(sb.toString());
 
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
@@ -51,10 +70,14 @@ public class RandomAccessPersistencia implements IPersistencia {
         String dni = "";
         int edad = 0;
         float salario = 0;
+        boolean borrado;
+        String nombre;
         StringBuilder sb = new StringBuilder();
         Persona persona = null;
         try (
-                 RandomAccessFile raf = new RandomAccessFile(ruta, "r");) {
+                 RandomAccessFile raf = new RandomAccessFile(ruta, "r");
+            )
+        {
 
             id = raf.readLong();
             for (int i = 0; i <= 8; i++) {
@@ -65,8 +88,18 @@ public class RandomAccessPersistencia implements IPersistencia {
 
             edad = raf.readInt();
             salario = raf.readFloat();
+            borrado = raf.readBoolean();
+            //Original
+            //nombre = raf.readUTF();
+            sb = new StringBuilder();
+            for (int i = 0; i < 100; i++) {
+                sb.append(raf.readChar());
+            }
+            nombre = sb.toString();
+            
 
-            persona = new Persona(id, dni, edad, salario);
+            persona = new Persona(id, dni, edad, salario, nombre);
+            persona.setBorrado(borrado);
 
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -80,7 +113,9 @@ public class RandomAccessPersistencia implements IPersistencia {
         long longitudBytes = 0;
         if (personas != null) {
             try (
-                     RandomAccessFile raf = new RandomAccessFile(ruta, "rw");) {
+                    RandomAccessFile raf = new RandomAccessFile(ruta, "rw");
+                )
+            {
 
                 longitudBytes = raf.length();
                 raf.seek(longitudBytes);
@@ -93,6 +128,11 @@ public class RandomAccessPersistencia implements IPersistencia {
 
                     raf.writeInt(persona.getEdad());
                     raf.writeFloat(persona.getSalario());
+                    raf.writeBoolean(persona.isBorrado());
+                    sb = new StringBuilder(persona.getNombre());
+                    sb.setLength(100);
+                    //raf.writeUTF(sb.toString());
+                    raf.writeChars(sb.toString());
                 }
 
             } catch (FileNotFoundException ex) {
@@ -111,11 +151,15 @@ public class RandomAccessPersistencia implements IPersistencia {
         String dni ;
         int edad;
         float salario;
+        boolean borrado;
+        String nombre;
         StringBuilder sb = new StringBuilder();
         Persona persona = null;
         ArrayList<Persona> personas = new ArrayList<>();
         try (
-                 RandomAccessFile raf = new RandomAccessFile(ruta, "r");) {
+                RandomAccessFile raf = new RandomAccessFile(ruta, "r");
+            )
+        {
 
             do {
                 id = raf.readLong();
@@ -128,8 +172,18 @@ public class RandomAccessPersistencia implements IPersistencia {
 
                 edad = raf.readInt();
                 salario = raf.readFloat();
+                borrado = raf.readBoolean();
+                //Original
+                //nombre = raf.readUTF();
+                sb = new StringBuilder();
+                for (int i = 0; i < 100; i++) {
+                    sb.append(raf.readChar());
+                }
+                nombre = sb.toString();
 
-                persona = new Persona(id, dni, edad, salario);
+
+                persona = new Persona(id, dni, edad, salario, nombre);
+                persona.setBorrado(borrado);
                 personas.add(persona);
 
             } while (raf.getFilePointer() < raf.length());
@@ -147,11 +201,15 @@ public class RandomAccessPersistencia implements IPersistencia {
         String dni = "";
         int edad = 0;
         float salario = 0;
+        boolean borrado;
+        String nombre;
         StringBuilder sb = new StringBuilder();
         Persona persona = null;
 
         try (
-                 RandomAccessFile raf = new RandomAccessFile(ruta, "r");) {
+                RandomAccessFile raf = new RandomAccessFile(ruta, "r");
+            )
+        {
 
             raf.seek(convertPositionToBytes(posicion));
             id = raf.readLong();
@@ -163,8 +221,19 @@ public class RandomAccessPersistencia implements IPersistencia {
 
             edad = raf.readInt();
             salario = raf.readFloat();
+            borrado = raf.readBoolean();
+            
+            
+            //Original
+            //nombre = raf.readUTF();
+            sb = new StringBuilder();
+            for (int i = 0; i < 100; i++) {
+                sb.append(raf.readChar());
+            }
+            nombre = sb.toString();
 
-            persona = new Persona(id, dni, edad, salario);
+            persona = new Persona(id, dni, edad, salario, nombre);
+            persona.setBorrado(borrado);
 
         } catch (EOFException ex) {
             ex.printStackTrace();
@@ -188,7 +257,9 @@ public class RandomAccessPersistencia implements IPersistencia {
 
     public Persona add(int posicion, String ruta, Persona persona) {
         try (
-                 RandomAccessFile raf = new RandomAccessFile(ruta, "rw");) {
+                RandomAccessFile raf = new RandomAccessFile(ruta, "rw");
+            )
+        {
 
             raf.seek(convertPositionToBytes(posicion));
 
@@ -200,6 +271,11 @@ public class RandomAccessPersistencia implements IPersistencia {
 
             raf.writeInt(persona.getEdad());
             raf.writeFloat(persona.getSalario());
+            raf.writeBoolean(persona.isBorrado());
+            sb = new StringBuilder(persona.getNombre());
+            sb.setLength(100);
+            //raf.writeUTF(sb.toString());
+            raf.writeChars(sb.toString());
 
         } catch (FileNotFoundException ex) {
             persona = null;
@@ -220,16 +296,18 @@ public class RandomAccessPersistencia implements IPersistencia {
         //Devuelve el nuevo salario.
         float nuevoSalario;
         try (
-                 RandomAccessFile raf = new RandomAccessFile(ruta, "rw");) {
+                RandomAccessFile raf = new RandomAccessFile(ruta, "rw");
+            )
+        {
 
             //(0) long id (8 bytes)
             //(4) String dni (9x2 bytes);
             //(22) int edad (4 bytes);
             //(26) float salario (4 bytes);
-            raf.seek(convertPositionToBytes(posicion) + 30);
+            raf.seek(convertPositionToBytes(posicion) + OFFSET_SALARIO);
             nuevoSalario = raf.readFloat() + incremento;
             
-            raf.seek(convertPositionToBytes(posicion) + 30);
+            raf.seek(convertPositionToBytes(posicion) + OFFSET_SALARIO);
             raf.writeFloat(nuevoSalario);
             
             return nuevoSalario;
@@ -240,5 +318,27 @@ public class RandomAccessPersistencia implements IPersistencia {
         }
 
         return -1;
+    }
+    
+    public boolean borrar(int posicion, String ruta, boolean borrado){
+        //En lugar de borrar un registro físicamente, vamos a marcarlo como borrado 
+        //con un campo booleano indicando si está borrado o no. Para ello,
+        //tendremos que añadir un atributo borrado a la clase Persona y
+        //modificar los métodos que hemos creado para escribir y leer ese campo.
+        //Tendremos que tener en cuenta que se modifica la longitud en bytes
+        //del registro de una objeto Persona. El método borrar buscará en el
+        //fichero indicado por ruta, la Persona en la posición indicada en el
+        //parámetro y establecerá el valor borrado en el fichero.
+        boolean exito = false;
+        
+        try ( RandomAccessFile raf = new RandomAccessFile(ruta, "rw");){
+            raf.seek(convertPositionToBytes(posicion) + OFFSET_BORRADO);
+            raf.writeBoolean(borrado);
+
+            
+        } catch (IOException e) {
+            
+        }
+        return false;
     }
 }
