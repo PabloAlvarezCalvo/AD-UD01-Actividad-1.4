@@ -11,70 +11,28 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
- * @author a21pabloac1
+ * @author mfernandez
  */
 public class DataIOPersistencia implements IPersistencia {
 
     @Override
     public void escribirPersona(Persona persona, String ruta) {
+
         if (persona != null) {
-            try (
-                    FileOutputStream fos = new FileOutputStream(ruta);
-                    DataOutputStream dos = new DataOutputStream(fos);
-                ){
+
+            try ( FileOutputStream fos = new FileOutputStream(ruta);  DataOutputStream dos = new DataOutputStream(fos);) {
+
                 dos.writeLong(persona.getId());
                 dos.writeChars(persona.getDni());
                 dos.writeUTF(persona.getDni());
                 dos.writeInt(persona.getEdad());
                 dos.writeFloat(persona.getSalario());
-            } 
-            catch (FileNotFoundException ex) {
-                ex.printStackTrace();
-                System.out.println("Ha ocurrido una excepción: " + ex.getMessage());
-            }
-            catch (IOException ex) {
-                ex.printStackTrace();
-                System.out.println("Ha ocurrido una excepción: " + ex.getMessage());
-            }
-        }
-    }
 
-    @Override
-    public Persona leerDatos(String ruta) {
-        long id;
-        String dni = "";
-        int edad;
-        float salario;
-        Persona persona = null;
-        
-        if (Files.exists(Paths.get(ruta))) {
-            try (
-                    FileInputStream fos = new FileInputStream(ruta);
-                    DataInputStream dis = new DataInputStream(fos);
-                ){
-                
-                id = dis.readLong();
-                System.out.println("ID: " + id);
-                
-                StringBuilder auxDni = new StringBuilder();
-                for(int i = 0; i < 9; i++) {
-                    //auxDni += dis.readChar();
-                    auxDni.append(dis.readChar());
-                }
-
-                dni = dis.readUTF();
-                
-                edad = dis.readInt();
-                
-                salario = dis.readFloat();
-                
-                persona = new Persona(id, dni, edad, salario);
-                
             } catch (FileNotFoundException ex) {
                 ex.printStackTrace();
                 System.out.println("Ha ocurrido una excepción: " + ex.getMessage());
@@ -83,9 +41,40 @@ public class DataIOPersistencia implements IPersistencia {
                 System.out.println("Ha ocurrido una excepción: " + ex.getMessage());
             }
         }
-        
+    }
+
+    @Override
+    public Persona leerDatos(String ruta) {
+
+        long id = 0;
+        char caracter;
+        String dni = "";
+        StringBuilder sb = new StringBuilder();
+        String dniUTF = "";
+        int edad = 0;
+        float salario = 0;
+        Persona persona = null;
+
+        try (
+                 FileInputStream fis = new FileInputStream(ruta);  DataInputStream dis = new DataInputStream(fis);) {
+
+            id = dis.readLong();
+
+            for (int i = 0; i < 9; i++) {
+                caracter = dis.readChar();
+                sb.append(caracter);
+            }
+
+            dniUTF = dis.readUTF();
+            edad = dis.readInt();
+            salario = dis.readFloat();
+
+            persona = new Persona(id, sb.toString(), edad, salario);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println("Ha ocurrido una excepción: " + ex.getMessage());
+        }
         return persona;
     }
-    
-    
+
 }

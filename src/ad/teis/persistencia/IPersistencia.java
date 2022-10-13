@@ -8,11 +8,11 @@ import ad.teis.model.Persona;
 
 /**
  *
- * @author a21pabloac1
+ * @author mfernandez
  */
 public interface IPersistencia {
+    
     void escribirPersona(Persona persona, String ruta);
     Persona leerDatos(String ruta);
-    //public Persona leerPersona(int posicion, String ruta);
-    //public void escribirPersonas(ArrayList<Persona> personas, String ruta);
+    
 }

@@ -6,15 +6,14 @@ package ad.teis.model;
 
 /**
  *
- * @author a21pabloac1
+ * @author mfernandez
  */
 public class Persona {
-
     private long id;
-    private String dni = "";
+    private String dni;
     private int edad;
     private float salario;
-    
+
     public Persona(long id, String dni, int edad, float salario) {
         this.id = id;
         this.dni = dni;
@@ -53,9 +52,14 @@ public class Persona {
     public void setSalario(float salario) {
         this.salario = salario;
     }
-    
+
     @Override
     public String toString() {
         return "Persona{" + "id=" + id + ", dni=" + dni + ", edad=" + edad + ", salario=" + salario + '}';
     }
+
+    
+  
+    
+    
 }
