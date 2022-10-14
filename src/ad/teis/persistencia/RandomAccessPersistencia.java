@@ -17,6 +17,8 @@ import java.util.ArrayList;
  */
 public class RandomAccessPersistencia implements IPersistencia {
     
+    private static final boolean MODO_UTF = false;
+    
     private static final int MAX_LENGTH_NOMBRE = 100;
     
     private static final int BYTES_ID = 8;
@@ -52,7 +54,12 @@ public class RandomAccessPersistencia implements IPersistencia {
             
             sb = new StringBuilder(persona.getNombre());
             sb.setLength(100);
-            raf.writeChars(sb.toString());
+            if (MODO_UTF){
+                raf.writeUTF(sb.toString());
+            } else {
+                raf.writeChars(sb.toString());
+            }
+            
 
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
@@ -89,14 +96,18 @@ public class RandomAccessPersistencia implements IPersistencia {
             edad = raf.readInt();
             salario = raf.readFloat();
             borrado = raf.readBoolean();
-            //Original
-            //nombre = raf.readUTF();
-            sb = new StringBuilder();
-            for (int i = 0; i < 100; i++) {
-                sb.append(raf.readChar());
-            }
-            nombre = sb.toString();
             
+            if (MODO_UTF){
+                //Original
+                nombre = raf.readUTF();
+            } else {
+                //Con chars
+                sb = new StringBuilder();
+                for (int i = 0; i < 100; i++) {
+                    sb.append(raf.readChar());
+                }
+                nombre = sb.toString();
+            }
 
             persona = new Persona(id, dni, edad, salario, nombre);
             persona.setBorrado(borrado);
@@ -131,8 +142,11 @@ public class RandomAccessPersistencia implements IPersistencia {
                     raf.writeBoolean(persona.isBorrado());
                     sb = new StringBuilder(persona.getNombre());
                     sb.setLength(100);
-                    //raf.writeUTF(sb.toString());
-                    raf.writeChars(sb.toString());
+                    if (MODO_UTF){
+                        raf.writeUTF(sb.toString());
+                    } else {
+                        raf.writeChars(sb.toString());
+                    }
                 }
 
             } catch (FileNotFoundException ex) {
@@ -173,13 +187,17 @@ public class RandomAccessPersistencia implements IPersistencia {
                 edad = raf.readInt();
                 salario = raf.readFloat();
                 borrado = raf.readBoolean();
+                if (MODO_UTF){
                 //Original
-                //nombre = raf.readUTF();
-                sb = new StringBuilder();
-                for (int i = 0; i < 100; i++) {
-                    sb.append(raf.readChar());
+                    nombre = raf.readUTF();
+                } else {
+                    //Con chars
+                    sb = new StringBuilder();
+                    for (int i = 0; i < 100; i++) {
+                        sb.append(raf.readChar());
+                    }
+                    nombre = sb.toString();
                 }
-                nombre = sb.toString();
 
 
                 persona = new Persona(id, dni, edad, salario, nombre);
@@ -224,13 +242,17 @@ public class RandomAccessPersistencia implements IPersistencia {
             borrado = raf.readBoolean();
             
             
-            //Original
-            //nombre = raf.readUTF();
-            sb = new StringBuilder();
-            for (int i = 0; i < 100; i++) {
-                sb.append(raf.readChar());
+            if (MODO_UTF){
+                //Original
+                nombre = raf.readUTF();
+            } else {
+                //Con chars
+                sb = new StringBuilder();
+                for (int i = 0; i < 100; i++) {
+                    sb.append(raf.readChar());
+                }
+                nombre = sb.toString();
             }
-            nombre = sb.toString();
 
             persona = new Persona(id, dni, edad, salario, nombre);
             persona.setBorrado(borrado);
@@ -267,15 +289,17 @@ public class RandomAccessPersistencia implements IPersistencia {
             StringBuilder sb = new StringBuilder(persona.getDni());
             sb.setLength(9);
             raf.writeChars(sb.toString());
-            //raf.writeUTF(sb.toString());
 
             raf.writeInt(persona.getEdad());
             raf.writeFloat(persona.getSalario());
             raf.writeBoolean(persona.isBorrado());
             sb = new StringBuilder(persona.getNombre());
             sb.setLength(100);
-            //raf.writeUTF(sb.toString());
-            raf.writeChars(sb.toString());
+            if (MODO_UTF){
+                raf.writeUTF(sb.toString());
+            } else {
+                raf.writeChars(sb.toString());
+            }
 
         } catch (FileNotFoundException ex) {
             persona = null;
@@ -340,5 +364,60 @@ public class RandomAccessPersistencia implements IPersistencia {
             
         }
         return false;
+    }
+    
+    public Persona leerPersonaDebug(int posicion, String ruta) {
+        long id = 0;
+        String dni = "";
+        int edad = 0;
+        float salario = 0;
+        boolean borrado;
+        String nombre;
+        StringBuilder sb = new StringBuilder();
+        Persona persona = null;
+
+        try (
+                RandomAccessFile raf = new RandomAccessFile(ruta, "r");
+            )
+        {
+
+            raf.seek(posicion);
+            id = raf.readLong();
+            for (int i = 0; i <= 8; i++) {
+                sb.append(raf.readChar());
+            }
+
+            dni = sb.toString();
+
+            edad = raf.readInt();
+            salario = raf.readFloat();
+            borrado = raf.readBoolean();
+            
+            
+            if (MODO_UTF){
+                //Original
+                nombre = raf.readUTF();
+            } else {
+                //Con chars
+                sb = new StringBuilder();
+                for (int i = 0; i < 100; i++) {
+                    sb.append(raf.readChar());
+                }
+                nombre = sb.toString();
+            }   
+
+            persona = new Persona(id, dni, edad, salario, nombre);
+            persona.setBorrado(borrado);
+
+        } catch (EOFException ex) {
+            ex.printStackTrace();
+            System.out.println("Se ha producido una excepción: " + ex.getMessage());
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println("Se ha producido una excepción: " + ex.getMessage());
+        }
+
+        return persona;
     }
 }

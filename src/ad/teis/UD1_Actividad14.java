@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author mfernandez
+ * @author a21pabloac1
  */
 public class UD1_Actividad14 {
 
@@ -40,7 +40,7 @@ public class UD1_Actividad14 {
             contador++;
         }
 
-        int pos = 3;
+        int pos = 2;
         Persona personaRecuperada = random.leerPersona(pos, PERSONA_FILE);
         if (personaRecuperada != null) {
             System.out.println("La persona en la posición: " + pos + " es: " + personaRecuperada);
@@ -61,6 +61,17 @@ public class UD1_Actividad14 {
 //        }
         
         System.out.println("Incrementando el salario a "   + random.sumarSalario(3, PERSONA_FILE, 1000.0f));
+        /*
+        try {
+            Persona psf;
+            for(int i = 0; i < 1000; i++){
+                psf = random.leerPersonaDebug(i, PERSONA_FILE);
+                System.out.printf("Posicion %d %s \n", i, psf);
+            }
+            
+        } catch (Exception e){
+            
+        }*/
     }
 
 }
