@@ -31,7 +31,7 @@ public class UD1_Actividad14 {
 
         RandomAccessPersistencia random = new RandomAccessPersistencia();
 
-        random.escribirPersonas(personas, PERSONA_FILE);
+        //random.escribirPersonas(personas, PERSONA_FILE);
         personasRecuperadas = random.leerTodo(PERSONA_FILE);
 
         int contador = 1;
@@ -60,18 +60,19 @@ public class UD1_Actividad14 {
 //             System.out.println("No se ha añadido la persona en la posición: " + pos);
 //        }
         
-        System.out.println("Incrementando el salario a "   + random.sumarSalario(3, PERSONA_FILE, 1000.0f));
-        /*
-        try {
-            Persona psf;
-            for(int i = 0; i < 1000; i++){
+        System.out.println("Incrementando el salario de la persona 3 a "   + random.sumarSalario(3, PERSONA_FILE, 1000.0f));
+        
+        Persona psf;
+        for(int i = 0; i < 700; i++){
+            try {
                 psf = random.leerPersonaDebug(i, PERSONA_FILE);
                 System.out.printf("Posicion %d %s \n", i, psf);
+            } catch (Exception e) {
+                break;
             }
-            
-        } catch (Exception e){
-            
-        }*/
+
+        }
+           
     }
 
 }
